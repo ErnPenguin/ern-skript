@@ -1,0 +1,43 @@
+# lifesteal addon for Sipunder :)
+
+# Loading of heart recipe:
+# edit if you want
+on load:
+	remove custom recipe "fragment"
+	register new shaped recipe for fermented spider eye of infinity 1 named "&cHeart &4Fragment" with enchant flags hidden with lore "&7Used in the &cHea&4rt" and "&7crafting recipe." using diamond block, dragon breath, diamond block, dragon breath, totem of undying, dragon breath, diamond block, dragon breath, diamond block with id "fragment"
+
+on tab complete of "/heartfrag" or "/hf" or "/heartfragment":
+	if player does not have permission "hf.give":
+		set tab completions for position 1 to "recipe"
+	else:
+		set tab completions for position 1 to "recipe" and "give"
+on inventory click:
+	if event-inventory is (metadata tag "frag" of player):
+		cancel event
+		
+command /hf [<text>]:
+	aliases: /heartfrag, /heartfragment
+	trigger:
+		if arg-1 is not "give" or "recipe":
+			if player does not have permission "hf.give":
+				message "&cIncorrect usage! &f/heartfragment &7<&crecipe&7>"
+			else:
+				message "&cIncorrect usage! &f/heartfragment &7<&crecipe&f/&cgive&7>"
+		if arg-1 is "recipe":
+			set metadata tag "frag" of player to dispenser inventory named "&cHeart &4Fragment &cRecipe&7:"
+			set slot 0 of metadata tag "frag" of player to diamond block named "&c&lDIAMOND &4&lBLOCK"
+			set slot 1 of metadata tag "frag" of player to dragon breath named "&c&lDRAGON &4&lBREATH"
+			set slot 2 of metadata tag "frag" of player to diamond block named "&c&lDIAMOND &4&lBLOCK"
+			set slot 3 of metadata tag "frag" of player to dragon breath named "&c&lDRAGON &4&lBREATH"
+			set slot 4 of metadata tag "frag" of player to totem of undying named "&c&lTOTEM &4&lOF &c&lUNDYING"
+			set slot 5 of metadata tag "frag" of player to dragon breath named "&c&lDRAGON &4&lBREATH"
+			set slot 6 of metadata tag "frag" of player to diamond block named "&c&lDIAMOND &4&lBLOCK"
+			set slot 7 of metadata tag "frag" of player to dragon breath named "&c&lDRAGON &4&lBREATH"
+			set slot 8 of metadata tag "frag" of player to diamond block named "&c&lDIAMOND &4&lBLOCK"
+			open (metadata tag "frag" of player) to player
+		if arg-1 is "give":
+			if player does not have permission "hf.give":
+				message "&8[&cLife&4Steal&8] &cYou are lacking the permission node &7[&4hf.give&7]"
+			else:
+				give fermented spider eye of infinity 1 named "&cHeart &4Fragment" with enchant flags hidden with lore "&7Used in the &cHea&4rt" and "&7crafting recipe." to player
+				message "&8[&cLife&4Steal&8] &fYou gave yourself a &cHeart &4Fragment&f!"
