@@ -52,7 +52,7 @@ on death of player:
 		
 on quit:
 	if {%player's uuid%.combat} is set:
-		kill player
+		execute console command "/kill %player%"
 		delete {%player's uuid%.combat}
 		remove player from {combat::*}
 		remove {%player's uuid%.combatplayer} from {combat::*}
