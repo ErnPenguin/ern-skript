@@ -1,0 +1,110 @@
+#Combat addon for lifesteal
+#edit combat commands at line 105
+
+options:
+	prefix: &8[&4LS&cCombat&8]
+
+every second:
+	loop {combat::*}:
+		if {%loop-value's uuid%.combat} <= 1:
+			delete {%loop-value's uuid%.combat}
+			message "{@prefix} &fYou are no longer in &cCombat&f!" to loop-value
+			send action bar "&cYou are no longer in combat!" to loop-value
+			remove loop-value from {combat::*}
+		if {%loop-value's uuid%.combat} is set:
+			set {%loop-value's uuid%.combat} to {%loop-value's uuid%.combat} - 1
+			send action bar "&cYou are in combat for &f%{%loop-value's uuid%.combat}% &cSeconds!" to loop-value
+		
+on damage of player:
+	if attacker is a player:
+		if attacker is not victim:
+			if {%victim's uuid%.cbypass} is not set:
+				if {%victim's uuid%.combat} is not set:
+					message "{@prefix} &fYou are now in &cCombat&f!" to victim
+					send action bar "&cYou are in combat for &f15 &cSeconds!" to victim
+				if {combat::*} does not contain victim:
+					add victim to {combat::*}
+				set {%victim's uuid%.combat} to 15
+				send action bar "&cYou are in combat for &f15 &cSeconds!" to victim
+			if {%attacker's uuid%.cbypass} is not set:
+				if {%attacker's uuid%.combat} is not set:
+					message "{@prefix} &fYou are now in &cCombat&f!" to attacker
+					send action bar "&cYou are in combat for &f15 &cSeconds!" to attacker
+				if {combat::*} does not contain attacker:
+					add attacker to {combat::*}
+				set {%attacker's uuid%.combat} to 15
+				send action bar "&cYou are in combat for &f15 &cSeconds!" to attacker
+				set {%victim's uuid%.combatplayer} to attacker
+				set {%attacker's uuid%.combatplayer} to victim
+		
+on skript stop:
+	loop {combat::*}:
+		delete {%loop-value's uuid%.combat}
+		
+on death of player:
+	if {%player's uuid%.combat} is set:
+		message "{@prefix} &fYou are no longer in &cCombat&f!" to {%player's uuid%.combatplayer}
+		send action bar "&cYou are no longer in combat!" to {%player's uuid%.combatplayer}
+		delete {%player's uuid%.combat}
+		delete {%{%player's uuid%.combatplayer}'s uuid%.combat}
+		remove {%player's uuid%.combatplayer} from {combat::*}
+		remove player from {combat::*}
+		
+on quit:
+	if {%player's uuid%.combat} is set:
+		kill player
+		delete {%player's uuid%.combat}
+		remove player from {combat::*}
+		remove {%player's uuid%.combatplayer} from {combat::*}
+		delete {%{%player's uuid%.combatplayer}'s uuid%.combat}
+		if {%player's uuid%.ls.hearts} is not set:
+			set {%player's uuid%.ls.hearts} to 10
+		if {%{%player's uuid%.combatplayer}'s uuid%.ls.hearts} is not set:
+			set {%{%player's uuid%.combatplayer}'s uuid%.ls.hearts} to 10
+		if {%player's uuid%.ls.hearts} is 0:
+			message "&8[&cLife&4Steal&8]&4 %player%&c has no more hearts to steal!" to {%player's uuid%.combatplayer}
+			send action bar "&cYou are no longer in combat!" to {%player's uuid%.combatplayer}
+			delete {%player's uuid%.combatplayer}
+			set {%player's uuid%.heartawait} to {%player's uuid%.ls.hearts}
+			stop
+		if {%player's uuid%.ls.hearts} is not {ls.heartlimit}:
+			add 1 to {%{%player's uuid%.combatplayer}'s uuid%.ls.hearts}
+			add 1 to {%player's uuid%.combatplayer}'s max health
+			message "&8[&cLife&4Steal&8] &fYou have killed &c%player%&f and gained &c1&f heart!" to {%player's uuid%.combatplayer}
+			wait 1 tick
+			remove 1 from {%player's uuid%.ls.hearts}
+			remove 1 from player's max health
+		else:
+			message "&8[&cLife&4Steal&8] &fYou are at the maximum amount of hearts!" to {%player's uuid%.combatplayer}
+			message "&7[&cYou have not gained &4%player%&c's heart&7]" to {%player's uuid%.combatplayer}
+		broadcast "{@prefix} &c%player% &fLogged out in combat!"
+		message "{@prefix} &fYou are no longer in &cCombat&f!" to {%player's uuid%.combatplayer}
+		send action bar "&cYou are no longer in combat!" to {%player's uuid%.combatplayer}
+		delete {%player's uuid%.combatplayer}
+		set {%player's uuid%.heartawait} to {%player's uuid%.ls.hearts}
+		
+on join:
+	if {%player's uuid%.heartawait} is set:
+		set player's max health to {%player's uuid%.heartawait}
+		delete {%player's uuid%.heartawait}
+		
+command /combatbypass:
+	aliases: /cbypass
+	permission: lscombat.bypass
+	permission message: {@prefix} &cYou are lacking the permission node &7[&4lscombat.bypass&7]
+	trigger:
+		if {%player's uuid%.cbypass} is not set:
+			set {%player's uuid%.cbypass} to true
+			message "{@prefix} &fYou have toggled combat bypass &cOn&f."
+		else:
+			delete {%player's uuid%.cbypass}
+			message "{@prefix} &fYou have toggled combat bypass &4Off&f."
+			
+on command:
+	if {%player's uuid%.combat} is set:
+		if command is "spawn" or "espawn" or "tpa" or "etpa" or "tpahere" or "etpahere" or "tpaccept" or "tpyes" or "etpyes" or "etpaccept" or "ehome" or "home":
+			message "{@prefix} &fYou can not run the command &c/%command%&f in combat!"
+			cancel event
+		if command contains ":":
+			message "{@prefix} &fYou can not run the command &c/%command%&f in combat!"
+			cancel event
