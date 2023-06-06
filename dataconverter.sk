@@ -1,0 +1,14 @@
+# a small skript to convert lifesteal 2.0 playerdata to lifesteal 3.0 playerdata
+# also please run this BEFORE adding 3.0
+on load:
+    suppress starting expression warnings
+    set {_start} to now
+    broadcast "&6Starting data conversion! &7(this may cause lag)"
+    loop all offline players:
+        if {%loop-value's uuid%.ls.hearts} is set:
+            set {ls.hearts.%loop-value's uuid%} to {%loop-value's uuid%.ls.hearts}
+            delete {%loop-value's uuid%.ls.hearts}
+        if {%loop-value's uuid%.ls.spec} is set:
+            set {ls.eliminated.%loop-value's uuid%} to true
+            delete {%loop-value's uuid%.ls.spec}
+    broadcast "&aDone! &7(%difference between now and {_start}%, please remove this skript now)"
